@@ -1,21 +1,28 @@
-//
-//  ContentView.swift
-//  CourseFlow
-//
-//  Created by Chris Dodge on 4/16/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
+
+            CoursesView()
+                .tabItem {
+                    Label("Courses", systemImage: "book")
+                }
+
+            AssignmentsView()
+                .tabItem {
+                    Label("Assignments", systemImage: "checklist")
+                }
+
+            StudyPlanView()
+                .tabItem {
+                    Label("Plan", systemImage: "calendar")
+                }
         }
-        .padding()
     }
 }
 
