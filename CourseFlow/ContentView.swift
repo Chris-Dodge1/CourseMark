@@ -35,37 +35,52 @@ struct ContentView: View {
     func generateStudyTasks(from assignments: [Assignment]) -> [StudyTask] {
         var tasks: [StudyTask] = []
         let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
         
         for assignment in assignments {
-            let dueDate = assignment.dueDate
+            let dueDate = calendar.startOfDay(for: assignment.dueDate)
+            let daysUntilDue = calendar.dateComponents([.day], from: today, to: dueDate).day ?? 0
             
-            let firstDate = calendar.date(byAdding: .day, value: -3, to: dueDate) ?? dueDate
-            let secondDate = calendar.date(byAdding: .day, value: -2, to: dueDate) ?? dueDate
-            let thirdDate = calendar.date(byAdding: .day, value: -1, to: dueDate) ?? dueDate
+            if daysUntilDue < 0 {
+                continue
+            }
             
-            tasks.append(
-                StudyTask(
-                    title: "Start \(assignment.title)",
-                    courseName: assignment.courseName,
-                    date: firstDate
+            let taskCount: Int
+            if daysUntilDue <= 1 {
+                taskCount = 1
+            } else if daysUntilDue <= 3 {
+                taskCount = 2
+            } else if daysUntilDue <= 7 {
+                taskCount = 3
+            } else if daysUntilDue <= 14 {
+                taskCount = 4
+            } else {
+                taskCount = 5
+            }
+            
+            let labels = ["Start", "Continue", "Review", "Polish", "Finish"]
+            
+            for i in 0..<taskCount {
+                let offset: Int
+                
+                if taskCount == 1 {
+                    offset = 0
+                } else {
+                    let progress = Double(i) / Double(taskCount - 1)
+                    offset = Int(round(progress * Double(daysUntilDue)))
+                }
+                
+                let taskDate = calendar.date(byAdding: .day, value: offset, to: today) ?? today
+                let label = labels[min(i, labels.count - 1)]
+                
+                tasks.append(
+                    StudyTask(
+                        title: "\(label) \(assignment.title)",
+                        courseName: assignment.courseName,
+                        date: taskDate
+                    )
                 )
-            )
-            
-            tasks.append(
-                StudyTask(
-                    title: "Continue \(assignment.title)",
-                    courseName: assignment.courseName,
-                    date: secondDate
-                )
-            )
-            
-            tasks.append(
-                StudyTask(
-                    title: "Finish \(assignment.title)",
-                    courseName: assignment.courseName,
-                    date: thirdDate
-                )
-            )
+            }
         }
         
         return tasks.sorted { $0.date < $1.date }
