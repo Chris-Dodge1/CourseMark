@@ -3,9 +3,9 @@ import SwiftUI
 struct AssignmentsView: View {
     @Binding var courses: [Course]
     @Binding var assignments: [Assignment]
-    
+
     @State private var showingAddAssignment = false
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -14,7 +14,7 @@ struct AssignmentsView: View {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 40))
                             .foregroundStyle(.secondary)
-                        
+
                         Text("Add a course before creating assignments.")
                             .foregroundStyle(.secondary)
                     }
@@ -23,38 +23,41 @@ struct AssignmentsView: View {
                         Image(systemName: "checklist")
                             .font(.system(size: 40))
                             .foregroundStyle(.secondary)
-                        
+
                         Text("No assignments added yet.")
                             .foregroundStyle(.secondary)
-                        
+
                         Button("Add Your First Assignment") {
                             showingAddAssignment = true
                         }
                         .buttonStyle(.borderedProminent)
                     }
                 } else {
-                    List(assignments) { assignment in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(assignment.title)
-                                .font(.headline)
-                            
-                            Text(assignment.courseName)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            
-                            Text("Type: \(assignment.type)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            
-                            Text("Priority: \(assignment.priority)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            
-                            Text("Due: \(assignment.dueDate.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    List {
+                        ForEach(assignments) { assignment in
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(assignment.title)
+                                    .font(.headline)
+
+                                Text(assignment.courseName)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+
+                                Text("Type: \(assignment.type)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Text("Priority: \(assignment.priority)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Text("Due: \(assignment.dueDate.formatted(date: .abbreviated, time: .omitted))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
+                        .onDelete(perform: deleteAssignments)
                     }
                 }
             }
@@ -72,6 +75,10 @@ struct AssignmentsView: View {
                 AddAssignmentView(assignments: $assignments, courses: courses)
             }
         }
+    }
+
+    func deleteAssignments(at offsets: IndexSet) {
+        assignments.remove(atOffsets: offsets)
     }
 }
 

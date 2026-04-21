@@ -11,7 +11,7 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    Text("CourseFlow")
+                    Text("CourseMark")
                         .font(.largeTitle)
                         .fontWeight(.bold)
 
