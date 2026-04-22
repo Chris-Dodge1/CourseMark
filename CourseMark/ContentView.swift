@@ -37,12 +37,22 @@ struct ContentView: View {
                 Label("Assignments", systemImage: "checklist")
             }
 
+            CalendarView(
+                courses: courses,
+                assignments: $assignments,
+                studyTasks: generatedStudyTasks,
+                toggleStudyTaskCompletion: toggleStudyTaskCompletion
+            )
+            .tabItem {
+                Label("Calendar", systemImage: "calendar.badge.clock")
+            }
+
             StudyPlanView(
                 studyTasks: generatedStudyTasks,
                 toggleStudyTaskCompletion: toggleStudyTaskCompletion
             )
             .tabItem {
-                Label("Plan", systemImage: "calendar")
+                Label("Plan", systemImage: "list.bullet.rectangle")
             }
         }
         .onAppear {
