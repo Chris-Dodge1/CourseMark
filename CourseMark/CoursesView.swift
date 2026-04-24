@@ -3,6 +3,7 @@ import SwiftUI
 struct CoursesView: View {
     @Binding var courses: [Course]
     @State private var showingAddCourse = false
+    @State private var selectedCourseID: UUID?
 
     var body: some View {
         NavigationStack {
@@ -23,20 +24,35 @@ struct CoursesView: View {
                     }
                 } else {
                     List {
-                        ForEach(courses) { course in
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(course.name)
-                                    .font(.headline)
+                        ForEach($courses) { $course in
+                            Button {
+                                selectedCourseID = course.id
+                            } label: {
+                                HStack(alignment: .top, spacing: 12) {
+                                    Circle()
+                                        .fill(colorForCourse(course.colorName))
+                                        .frame(width: 12, height: 12)
+                                        .padding(.top, 6)
 
-                                Text(course.instructor)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(course.name)
+                                            .font(.headline)
 
-                                Text("Color: \(course.colorName)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                        Text(course.instructor)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                        .padding(.top, 6)
+                                }
+                                .contentShape(Rectangle())
                             }
-                            .padding(.vertical, 4)
+                            .buttonStyle(.plain)
                         }
                         .onDelete(perform: deleteCourses)
                     }
@@ -53,11 +69,33 @@ struct CoursesView: View {
             .sheet(isPresented: $showingAddCourse) {
                 AddCourseView(courses: $courses)
             }
+            .sheet(
+                isPresented: Binding(
+                    get: { selectedCourseID != nil },
+                    set: { if !$0 { selectedCourseID = nil } }
+                )
+            ) {
+                if let selectedCourseID,
+                   let index = courses.firstIndex(where: { $0.id == selectedCourseID }) {
+                    EditCourseView(course: $courses[index])
+                }
+            }
         }
     }
 
     func deleteCourses(at offsets: IndexSet) {
         courses.remove(atOffsets: offsets)
+    }
+
+    func colorForCourse(_ colorName: String) -> Color {
+        switch colorName.lowercased() {
+        case "blue": return .blue
+        case "green": return .green
+        case "purple": return .purple
+        case "orange": return .orange
+        case "red": return .red
+        default: return .gray
+        }
     }
 }
 
