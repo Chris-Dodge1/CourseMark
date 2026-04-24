@@ -5,6 +5,7 @@ struct AssignmentsView: View {
     @Binding var assignments: [Assignment]
 
     @State private var showingAddAssignment = false
+    @State private var selectedAssignmentID: UUID?
 
     var body: some View {
         NavigationStack {
@@ -35,39 +36,52 @@ struct AssignmentsView: View {
                 } else {
                     List {
                         ForEach($assignments) { $assignment in
-                            HStack(alignment: .top, spacing: 12) {
-                                Button {
-                                    assignment.isCompleted.toggle()
-                                } label: {
-                                    Image(systemName: assignment.isCompleted ? "checkmark.circle.fill" : "circle")
-                                        .font(.title3)
+                            Button {
+                                selectedAssignmentID = assignment.id
+                            } label: {
+                                HStack(alignment: .top, spacing: 12) {
+                                    Button {
+                                        assignment.isCompleted.toggle()
+                                    } label: {
+                                        Image(systemName: assignment.isCompleted ? "checkmark.circle.fill" : "circle")
+                                            .font(.title3)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(assignment.title)
+                                            .font(.headline)
+                                            .strikethrough(assignment.isCompleted)
+                                            .foregroundStyle(assignment.isCompleted ? .secondary : .primary)
+
+                                        Text(assignment.courseName)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+
+                                        Text("Type: \(assignment.type)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+
+                                        Text("Priority: \(assignment.priority)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+
+                                        Text("Due: \(assignment.dueDate.formatted(date: .abbreviated, time: .omitted))")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.vertical, 4)
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                        .padding(.top, 6)
                                 }
-                                .buttonStyle(.plain)
-
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(assignment.title)
-                                        .font(.headline)
-                                        .strikethrough(assignment.isCompleted)
-                                        .foregroundStyle(assignment.isCompleted ? .secondary : .primary)
-
-                                    Text(assignment.courseName)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-
-                                    Text("Type: \(assignment.type)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-
-                                    Text("Priority: \(assignment.priority)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-
-                                    Text("Due: \(assignment.dueDate.formatted(date: .abbreviated, time: .omitted))")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .padding(.vertical, 4)
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
                         }
                         .onDelete(perform: deleteAssignments)
                     }
@@ -85,6 +99,20 @@ struct AssignmentsView: View {
             }
             .sheet(isPresented: $showingAddAssignment) {
                 AddAssignmentView(assignments: $assignments, courses: courses)
+            }
+            .sheet(
+                isPresented: Binding(
+                    get: { selectedAssignmentID != nil },
+                    set: { if !$0 { selectedAssignmentID = nil } }
+                )
+            ) {
+                if let selectedAssignmentID,
+                   let index = assignments.firstIndex(where: { $0.id == selectedAssignmentID }) {
+                    EditAssignmentView(
+                        assignment: $assignments[index],
+                        courses: courses
+                    )
+                }
             }
         }
     }
