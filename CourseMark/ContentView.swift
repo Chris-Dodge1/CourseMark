@@ -24,7 +24,7 @@ struct ContentView: View {
                 Label("Home", systemImage: "house")
             }
 
-            CoursesView(courses: $courses)
+            CoursesView(courses: $courses, assignments: assignments)
                 .tabItem {
                     Label("Courses", systemImage: "book")
                 }
