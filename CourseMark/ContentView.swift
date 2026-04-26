@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import UserNotifications
 
 struct ContentView: View {
     @State private var courses: [Course] = []
@@ -24,10 +25,13 @@ struct ContentView: View {
                 Label("Home", systemImage: "house")
             }
 
-            CoursesView(courses: $courses, assignments: assignments)
-                .tabItem {
-                    Label("Courses", systemImage: "book")
-                }
+            CoursesView(
+                courses: $courses,
+                assignments: assignments
+            )
+            .tabItem {
+                Label("Courses", systemImage: "book")
+            }
 
             AssignmentsView(
                 courses: $courses,
@@ -59,12 +63,16 @@ struct ContentView: View {
             loadCourses()
             loadAssignments()
             loadCompletedStudyTaskIDs()
+
+            NotificationManager.requestPermission()
+            NotificationManager.scheduleAssignmentReminders(for: assignments)
         }
         .onChange(of: courses) {
             saveCourses()
         }
         .onChange(of: assignments) {
             saveAssignments()
+            NotificationManager.scheduleAssignmentReminders(for: assignments)
         }
         .onChange(of: completedStudyTaskIDs) {
             saveCompletedStudyTaskIDs()
