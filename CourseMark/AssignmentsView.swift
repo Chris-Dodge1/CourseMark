@@ -40,13 +40,9 @@ struct AssignmentsView: View {
                                 selectedAssignmentID = assignment.id
                             } label: {
                                 HStack(alignment: .top, spacing: 12) {
-                                    Button {
-                                        assignment.isCompleted.toggle()
-                                    } label: {
-                                        Image(systemName: assignment.isCompleted ? "checkmark.circle.fill" : "circle")
-                                            .font(.title3)
-                                    }
-                                    .buttonStyle(.plain)
+                                    Image(systemName: assignment.isCompleted ? "checkmark.circle.fill" : "circle")
+                                        .font(.title3)
+                                        .foregroundStyle(assignment.isCompleted ? .green : .secondary)
 
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(assignment.title)
@@ -82,6 +78,24 @@ struct AssignmentsView: View {
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    assignment.isCompleted.toggle()
+                                } label: {
+                                    Label(
+                                        assignment.isCompleted ? "Undo" : "Complete",
+                                        systemImage: assignment.isCompleted ? "arrow.uturn.backward" : "checkmark"
+                                    )
+                                }
+                                .tint(assignment.isCompleted ? .orange : .green)
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    deleteAssignment(id: assignment.id)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                         .onDelete(perform: deleteAssignments)
                     }
@@ -119,6 +133,10 @@ struct AssignmentsView: View {
 
     func deleteAssignments(at offsets: IndexSet) {
         assignments.remove(atOffsets: offsets)
+    }
+
+    func deleteAssignment(id: UUID) {
+        assignments.removeAll { $0.id == id }
     }
 }
 
