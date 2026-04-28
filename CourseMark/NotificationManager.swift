@@ -12,25 +12,35 @@ struct NotificationManager {
         }
     }
 
-    static func scheduleAssignmentReminders(for assignments: [Assignment]) {
+    static func scheduleAssignmentReminders(
+        for assignments: [Assignment],
+        remindersEnabled: Bool,
+        reminderTime: Date
+    ) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: assignments.map { "assignment-\($0.id.uuidString)" }
         )
 
+        guard remindersEnabled else { return }
+
         for assignment in assignments where !assignment.isCompleted {
-            scheduleReminder(for: assignment)
+            scheduleReminder(for: assignment, reminderTime: reminderTime)
         }
     }
 
-    private static func scheduleReminder(for assignment: Assignment) {
+    private static func scheduleReminder(for assignment: Assignment, reminderTime: Date) {
         let calendar = Calendar.current
 
-        guard let reminderDate = calendar.date(
-            bySettingHour: 9,
-            minute: 0,
-            second: 0,
-            of: assignment.dueDate
-        ) else {
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: reminderTime)
+
+        guard let hour = timeComponents.hour,
+              let minute = timeComponents.minute,
+              let reminderDate = calendar.date(
+                bySettingHour: hour,
+                minute: minute,
+                second: 0,
+                of: assignment.dueDate
+              ) else {
             return
         }
 

@@ -7,9 +7,19 @@ struct ContentView: View {
     @State private var assignments: [Assignment] = []
     @State private var completedStudyTaskIDs: Set<String> = []
 
+    @State private var remindersEnabled: Bool = true
+    @State private var reminderTime: Date = Calendar.current.date(
+        bySettingHour: 9,
+        minute: 0,
+        second: 0,
+        of: Date()
+    ) ?? Date()
+
     private let coursesKey = "savedCourses"
     private let assignmentsKey = "savedAssignments"
     private let completedStudyTaskIDsKey = "completedStudyTaskIDs"
+    private let remindersEnabledKey = "remindersEnabled"
+    private let reminderTimeKey = "reminderTime"
 
     var generatedStudyTasks: [StudyTask] {
         generateStudyTasks(from: assignments)
@@ -58,25 +68,50 @@ struct ContentView: View {
             .tabItem {
                 Label("Plan", systemImage: "list.bullet.rectangle")
             }
+
+            SettingsView(
+                remindersEnabled: $remindersEnabled,
+                reminderTime: $reminderTime
+            )
+            .tabItem {
+                Label("Settings", systemImage: "gear")
+            }
         }
         .onAppear {
             loadCourses()
             loadAssignments()
             loadCompletedStudyTaskIDs()
+            loadReminderSettings()
 
             NotificationManager.requestPermission()
-            NotificationManager.scheduleAssignmentReminders(for: assignments)
+            scheduleReminders()
         }
         .onChange(of: courses) {
             saveCourses()
         }
         .onChange(of: assignments) {
             saveAssignments()
-            NotificationManager.scheduleAssignmentReminders(for: assignments)
+            scheduleReminders()
         }
         .onChange(of: completedStudyTaskIDs) {
             saveCompletedStudyTaskIDs()
         }
+        .onChange(of: remindersEnabled) {
+            saveReminderSettings()
+            scheduleReminders()
+        }
+        .onChange(of: reminderTime) {
+            saveReminderSettings()
+            scheduleReminders()
+        }
+    }
+
+    func scheduleReminders() {
+        NotificationManager.scheduleAssignmentReminders(
+            for: assignments,
+            remindersEnabled: remindersEnabled,
+            reminderTime: reminderTime
+        )
     }
 
     func saveCourses() {
@@ -125,6 +160,19 @@ struct ContentView: View {
     func loadCompletedStudyTaskIDs() {
         let idsArray = UserDefaults.standard.stringArray(forKey: completedStudyTaskIDsKey) ?? []
         completedStudyTaskIDs = Set(idsArray)
+    }
+
+    func saveReminderSettings() {
+        UserDefaults.standard.set(remindersEnabled, forKey: remindersEnabledKey)
+        UserDefaults.standard.set(reminderTime, forKey: reminderTimeKey)
+    }
+
+    func loadReminderSettings() {
+        remindersEnabled = UserDefaults.standard.object(forKey: remindersEnabledKey) as? Bool ?? true
+
+        if let savedTime = UserDefaults.standard.object(forKey: reminderTimeKey) as? Date {
+            reminderTime = savedTime
+        }
     }
 
     func toggleStudyTaskCompletion(for taskID: String) {
