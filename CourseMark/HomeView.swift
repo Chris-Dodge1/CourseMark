@@ -8,65 +8,85 @@ struct HomeView: View {
         Array(studyTasks.prefix(3))
     }
 
+    var studyPlanPreview: [StudyTask] {
+        Array(studyTasks.prefix(6))
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    Text("CourseMark")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                VStack(spacing: 22) {
+                    VStack(spacing: 6) {
+                        Text("CourseMark")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
 
-                    Text("Your study planner")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Upcoming Tasks")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-
-                        if upcomingTasks.isEmpty {
-                            Text("No tasks yet.")
-                                .foregroundStyle(.secondary)
-                        } else {
-                            ForEach(upcomingTasks) { task in
-                                HStack(alignment: .top, spacing: 12) {
-                                    Button {
-                                        toggleStudyTaskCompletion(task.id)
-                                    } label: {
-                                        Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                                            .font(.title3)
-                                    }
-                                    .buttonStyle(.plain)
-
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(task.title)
-                                            .font(.headline)
-                                            .strikethrough(task.isCompleted)
-                                            .foregroundStyle(task.isCompleted ? .secondary : .primary)
-
-                                        Text(task.courseName)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-
-                                        Text(task.date.formatted(date: .abbreviated, time: .omitted))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                .padding()
-                                .background(.thinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                            }
-                        }
+                        Text("Your study planner")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    section(title: "Upcoming Tasks", tasks: upcomingTasks, emptyText: "No upcoming tasks yet.")
+
+                    section(title: "Study Plan Preview", tasks: studyPlanPreview, emptyText: "Your study plan will appear here.")
                 }
                 .padding()
             }
             .navigationTitle("Home")
         }
+    }
+
+    func section(title: String, tasks: [StudyTask], emptyText: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            if tasks.isEmpty {
+                Text(emptyText)
+                    .foregroundStyle(.secondary)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.thinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            } else {
+                ForEach(tasks) { task in
+                    taskCard(task)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    func taskCard(_ task: StudyTask) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Button {
+                toggleStudyTaskCompletion(task.id)
+            } label: {
+                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(task.title)
+                    .font(.headline)
+                    .strikethrough(task.isCompleted)
+                    .foregroundStyle(task.isCompleted ? .secondary : .primary)
+
+                Text(task.courseName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                Text(task.date.formatted(date: .abbreviated, time: .omitted))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
