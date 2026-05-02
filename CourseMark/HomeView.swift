@@ -1,8 +1,11 @@
 import SwiftUI
 
 struct HomeView: View {
+    let assignments: [Assignment]
     let studyTasks: [StudyTask]
     let toggleStudyTaskCompletion: (String) -> Void
+
+    private let calendar = Calendar.current
 
     var upcomingTasks: [StudyTask] {
         Array(studyTasks.prefix(3))
@@ -10,6 +13,35 @@ struct HomeView: View {
 
     var studyPlanPreview: [StudyTask] {
         Array(studyTasks.prefix(6))
+    }
+
+    var dueTodayCount: Int {
+        assignments.filter {
+            calendar.isDateInToday($0.dueDate) && !$0.isCompleted
+        }.count
+    }
+
+    var dueThisWeekCount: Int {
+        let today = calendar.startOfDay(for: Date())
+        let weekFromNow = calendar.date(byAdding: .day, value: 7, to: today) ?? today
+
+        return assignments.filter {
+            let dueDate = calendar.startOfDay(for: $0.dueDate)
+            return dueDate >= today && dueDate <= weekFromNow && !$0.isCompleted
+        }.count
+    }
+
+    var completedCount: Int {
+        assignments.filter { $0.isCompleted }.count
+    }
+
+    var overdueCount: Int {
+        let today = calendar.startOfDay(for: Date())
+
+        return assignments.filter {
+            let dueDate = calendar.startOfDay(for: $0.dueDate)
+            return dueDate < today && !$0.isCompleted
+        }.count
     }
 
     var body: some View {
@@ -26,6 +58,8 @@ struct HomeView: View {
                             .foregroundStyle(.secondary)
                     }
 
+                    dashboardStats
+
                     section(title: "Upcoming Tasks", tasks: upcomingTasks, emptyText: "No upcoming tasks yet.")
 
                     section(title: "Study Plan Preview", tasks: studyPlanPreview, emptyText: "Your study plan will appear here.")
@@ -34,6 +68,42 @@ struct HomeView: View {
             }
             .navigationTitle("Home")
         }
+    }
+
+    var dashboardStats: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Dashboard")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                statCard(title: "Due Today", value: dueTodayCount, systemImage: "calendar.badge.exclamationmark")
+                statCard(title: "This Week", value: dueThisWeekCount, systemImage: "calendar")
+                statCard(title: "Completed", value: completedCount, systemImage: "checkmark.circle")
+                statCard(title: "Overdue", value: overdueCount, systemImage: "exclamationmark.triangle")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    func statCard(title: String, value: Int, systemImage: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.title2)
+                .foregroundStyle(.blue)
+
+            Text("\(value)")
+                .font(.title)
+                .fontWeight(.bold)
+
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     func section(title: String, tasks: [StudyTask], emptyText: String) -> some View {
@@ -91,5 +161,9 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView(studyTasks: [], toggleStudyTaskCompletion: { _ in })
+    HomeView(
+        assignments: [],
+        studyTasks: [],
+        toggleStudyTaskCompletion: { _ in }
+    )
 }
