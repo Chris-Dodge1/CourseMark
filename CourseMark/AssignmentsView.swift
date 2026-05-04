@@ -176,9 +176,7 @@ struct AssignmentsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text("Priority: \(a.priority)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                priorityBadge(a.priority)
 
                 Text("Due: \(a.dueDate.formatted(date: .abbreviated, time: .omitted))")
                     .font(.caption)
@@ -194,6 +192,30 @@ struct AssignmentsView: View {
                 .padding(.top, 6)
         }
         .contentShape(Rectangle())
+    }
+
+    func priorityBadge(_ priority: String) -> some View {
+        Text(priority)
+            .font(.caption)
+            .fontWeight(.semibold)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(priorityColor(priority).opacity(0.15))
+            .foregroundStyle(priorityColor(priority))
+            .clipShape(Capsule())
+    }
+
+    func priorityColor(_ priority: String) -> Color {
+        switch priority.lowercased() {
+        case "high":
+            return .red
+        case "medium":
+            return .orange
+        case "low":
+            return .green
+        default:
+            return .gray
+        }
     }
 
     func deleteAssignments(at offsets: IndexSet) {

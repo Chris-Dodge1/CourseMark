@@ -258,9 +258,13 @@ extension CalendarView {
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
 
-                                        Text("\(assignment.type) • \(assignment.priority)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                        HStack(spacing: 8) {
+                                            Text(assignment.type)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+
+                                            priorityBadge(assignment.priority)
+                                        }
                                     }
 
                                     Spacer()
@@ -349,6 +353,30 @@ extension CalendarView {
             return .orange
         case "red":
             return .red
+        default:
+            return .gray
+        }
+    }
+
+    func priorityBadge(_ priority: String) -> some View {
+        Text(priority)
+            .font(.caption)
+            .fontWeight(.semibold)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(priorityColor(priority).opacity(0.15))
+            .foregroundStyle(priorityColor(priority))
+            .clipShape(Capsule())
+    }
+
+    func priorityColor(_ priority: String) -> Color {
+        switch priority.lowercased() {
+        case "high":
+            return .red
+        case "medium":
+            return .orange
+        case "low":
+            return .green
         default:
             return .gray
         }
