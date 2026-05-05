@@ -9,9 +9,12 @@ struct AssignmentsView: View {
 
     @State private var selectedCourseFilter: String = "All"
     @State private var selectedStatusFilter: String = "All"
+    @State private var selectedSortOption: String = "Due Date"
+
+    let sortOptions = ["Due Date", "Priority", "Course", "Status"]
 
     var filteredAssignments: [Assignment] {
-        assignments.filter { assignment in
+        let filtered = assignments.filter { assignment in
             let matchesCourse =
                 selectedCourseFilter == "All" ||
                 assignment.courseName == selectedCourseFilter
@@ -22,6 +25,25 @@ struct AssignmentsView: View {
                 (selectedStatusFilter == "Completed" && assignment.isCompleted)
 
             return matchesCourse && matchesStatus
+        }
+
+        switch selectedSortOption {
+        case "Priority":
+            return filtered.sorted {
+                priorityValue($0.priority) > priorityValue($1.priority)
+            }
+        case "Course":
+            return filtered.sorted {
+                $0.courseName < $1.courseName
+            }
+        case "Status":
+            return filtered.sorted {
+                !$0.isCompleted && $1.isCompleted
+            }
+        default:
+            return filtered.sorted {
+                $0.dueDate < $1.dueDate
+            }
         }
     }
 
@@ -133,22 +155,39 @@ struct AssignmentsView: View {
     }
 
     var filterBar: some View {
-        HStack(spacing: 12) {
-            Picker("Course", selection: $selectedCourseFilter) {
-                Text("All Courses").tag("All")
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                Picker("Course", selection: $selectedCourseFilter) {
+                    Text("All Courses").tag("All")
 
-                ForEach(courses, id: \.name) { course in
-                    Text(course.name).tag(course.name)
+                    ForEach(courses, id: \.name) { course in
+                        Text(course.name).tag(course.name)
+                    }
                 }
-            }
-            .pickerStyle(.menu)
+                .pickerStyle(.menu)
 
-            Picker("Status", selection: $selectedStatusFilter) {
-                Text("All").tag("All")
-                Text("Active").tag("Active")
-                Text("Completed").tag("Completed")
+                Picker("Status", selection: $selectedStatusFilter) {
+                    Text("All").tag("All")
+                    Text("Active").tag("Active")
+                    Text("Completed").tag("Completed")
+                }
+                .pickerStyle(.menu)
             }
-            .pickerStyle(.menu)
+
+            HStack {
+                Picker("Sort", selection: $selectedSortOption) {
+                    ForEach(sortOptions, id: \.self) { option in
+                        Text(option).tag(option)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Spacer()
+
+                Text("Sorted by \(selectedSortOption)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
@@ -215,6 +254,19 @@ struct AssignmentsView: View {
             return .green
         default:
             return .gray
+        }
+    }
+
+    func priorityValue(_ priority: String) -> Int {
+        switch priority.lowercased() {
+        case "high":
+            return 3
+        case "medium":
+            return 2
+        case "low":
+            return 1
+        default:
+            return 0
         }
     }
 

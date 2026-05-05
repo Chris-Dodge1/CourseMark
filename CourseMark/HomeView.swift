@@ -15,33 +15,33 @@ struct HomeView: View {
         Array(studyTasks.prefix(6))
     }
 
-    var dueTodayCount: Int {
+    var dueTodayAssignments: [Assignment] {
         assignments.filter {
             calendar.isDateInToday($0.dueDate) && !$0.isCompleted
-        }.count
+        }
     }
 
-    var dueThisWeekCount: Int {
+    var dueThisWeekAssignments: [Assignment] {
         let today = calendar.startOfDay(for: Date())
         let weekFromNow = calendar.date(byAdding: .day, value: 7, to: today) ?? today
 
         return assignments.filter {
             let dueDate = calendar.startOfDay(for: $0.dueDate)
             return dueDate >= today && dueDate <= weekFromNow && !$0.isCompleted
-        }.count
+        }
     }
 
-    var completedCount: Int {
-        assignments.filter { $0.isCompleted }.count
+    var completedAssignments: [Assignment] {
+        assignments.filter { $0.isCompleted }
     }
 
-    var overdueCount: Int {
+    var overdueAssignments: [Assignment] {
         let today = calendar.startOfDay(for: Date())
 
         return assignments.filter {
             let dueDate = calendar.startOfDay(for: $0.dueDate)
             return dueDate < today && !$0.isCompleted
-        }.count
+        }
     }
 
     var body: some View {
@@ -77,10 +77,29 @@ struct HomeView: View {
                 .fontWeight(.semibold)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                statCard(title: "Due Today", value: dueTodayCount, systemImage: "calendar.badge.exclamationmark")
-                statCard(title: "This Week", value: dueThisWeekCount, systemImage: "calendar")
-                statCard(title: "Completed", value: completedCount, systemImage: "checkmark.circle")
-                statCard(title: "Overdue", value: overdueCount, systemImage: "exclamationmark.triangle")
+                NavigationLink {
+                    DashboardDetailView(title: "Due Today", assignments: dueTodayAssignments)
+                } label: {
+                    statCard(title: "Due Today", value: dueTodayAssignments.count, systemImage: "calendar.badge.exclamationmark")
+                }
+
+                NavigationLink {
+                    DashboardDetailView(title: "This Week", assignments: dueThisWeekAssignments)
+                } label: {
+                    statCard(title: "This Week", value: dueThisWeekAssignments.count, systemImage: "calendar")
+                }
+
+                NavigationLink {
+                    DashboardDetailView(title: "Completed", assignments: completedAssignments)
+                } label: {
+                    statCard(title: "Completed", value: completedAssignments.count, systemImage: "checkmark.circle")
+                }
+
+                NavigationLink {
+                    DashboardDetailView(title: "Overdue", assignments: overdueAssignments)
+                } label: {
+                    statCard(title: "Overdue", value: overdueAssignments.count, systemImage: "exclamationmark.triangle")
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
