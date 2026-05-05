@@ -30,7 +30,8 @@ struct ContentView: View {
     var body: some View {
         TabView {
             HomeView(
-                assignments: assignments,
+                assignments: $assignments,
+                courses: courses,
                 studyTasks: generatedStudyTasks,
                 toggleStudyTaskCompletion: toggleStudyTaskCompletion
             )

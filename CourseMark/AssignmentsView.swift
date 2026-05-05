@@ -10,6 +10,7 @@ struct AssignmentsView: View {
     @State private var selectedCourseFilter: String = "All"
     @State private var selectedStatusFilter: String = "All"
     @State private var selectedSortOption: String = "Due Date"
+    @State private var searchText: String = ""
 
     let sortOptions = ["Due Date", "Priority", "Course", "Status"]
 
@@ -24,7 +25,14 @@ struct AssignmentsView: View {
                 (selectedStatusFilter == "Active" && !assignment.isCompleted) ||
                 (selectedStatusFilter == "Completed" && assignment.isCompleted)
 
-            return matchesCourse && matchesStatus
+            let matchesSearch =
+                searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                assignment.title.localizedCaseInsensitiveContains(searchText) ||
+                assignment.courseName.localizedCaseInsensitiveContains(searchText) ||
+                assignment.type.localizedCaseInsensitiveContains(searchText) ||
+                assignment.priority.localizedCaseInsensitiveContains(searchText)
+
+            return matchesCourse && matchesStatus && matchesSearch
         }
 
         switch selectedSortOption {
@@ -79,11 +87,11 @@ struct AssignmentsView: View {
 
                         if filteredAssignments.isEmpty {
                             VStack(spacing: 12) {
-                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                Image(systemName: "magnifyingglass")
                                     .font(.system(size: 40))
                                     .foregroundStyle(.secondary)
 
-                                Text("No assignments match these filters.")
+                                Text("No assignments match your search or filters.")
                                     .foregroundStyle(.secondary)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -125,6 +133,7 @@ struct AssignmentsView: View {
                 }
             }
             .navigationTitle("Assignments")
+            .searchable(text: $searchText, prompt: "Search assignments")
             .toolbar {
                 if !courses.isEmpty {
                     Button {

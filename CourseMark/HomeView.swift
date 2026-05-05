@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct HomeView: View {
-    let assignments: [Assignment]
+    @Binding var assignments: [Assignment]
+    let courses: [Course]
     let studyTasks: [StudyTask]
     let toggleStudyTaskCompletion: (String) -> Void
 
@@ -78,25 +79,45 @@ struct HomeView: View {
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 NavigationLink {
-                    DashboardDetailView(title: "Due Today", assignments: dueTodayAssignments)
+                    DashboardDetailView(
+                        title: "Due Today",
+                        assignments: $assignments,
+                        assignmentIDs: dueTodayAssignments.map { $0.id },
+                        courses: courses
+                    )
                 } label: {
                     statCard(title: "Due Today", value: dueTodayAssignments.count, systemImage: "calendar.badge.exclamationmark")
                 }
 
                 NavigationLink {
-                    DashboardDetailView(title: "This Week", assignments: dueThisWeekAssignments)
+                    DashboardDetailView(
+                        title: "This Week",
+                        assignments: $assignments,
+                        assignmentIDs: dueThisWeekAssignments.map { $0.id },
+                        courses: courses
+                    )
                 } label: {
                     statCard(title: "This Week", value: dueThisWeekAssignments.count, systemImage: "calendar")
                 }
 
                 NavigationLink {
-                    DashboardDetailView(title: "Completed", assignments: completedAssignments)
+                    DashboardDetailView(
+                        title: "Completed",
+                        assignments: $assignments,
+                        assignmentIDs: completedAssignments.map { $0.id },
+                        courses: courses
+                    )
                 } label: {
                     statCard(title: "Completed", value: completedAssignments.count, systemImage: "checkmark.circle")
                 }
 
                 NavigationLink {
-                    DashboardDetailView(title: "Overdue", assignments: overdueAssignments)
+                    DashboardDetailView(
+                        title: "Overdue",
+                        assignments: $assignments,
+                        assignmentIDs: overdueAssignments.map { $0.id },
+                        courses: courses
+                    )
                 } label: {
                     statCard(title: "Overdue", value: overdueAssignments.count, systemImage: "exclamationmark.triangle")
                 }
@@ -181,7 +202,8 @@ struct HomeView: View {
 
 #Preview {
     HomeView(
-        assignments: [],
+        assignments: .constant([]),
+        courses: [],
         studyTasks: [],
         toggleStudyTaskCompletion: { _ in }
     )
